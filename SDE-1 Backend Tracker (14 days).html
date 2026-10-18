@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SDE-1 Backend Tracker · 14 days</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#eef1ec;--surface:#fbfcfa;--ink:#16262b;--muted:#5d6e72;--line:#d3dbd5;
+  --accent:#0e6e68;--accent-ink:#ffffff;--done:#c9e4d6;--warn:#b4531a;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101a1c;--surface:#172427;--ink:#e6efeb;--muted:#93a6a8;--line:#27393c;
+    --accent:#4cc9bd;--accent-ink:#06201e;--done:#1f4036;--warn:#f0a06a;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101a1c;--surface:#172427;--ink:#e6efeb;--muted:#93a6a8;--line:#27393c;
+  --accent:#4cc9bd;--accent-ink:#06201e;--done:#1f4036;--warn:#f0a06a;color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 64px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.05;margin:0;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:6px 0 0;max-width:46ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:600}
+.track{height:12px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
+.fill{height:100%;width:0;background:var(--accent);transition:width .35s ease}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.day.complete{border-color:var(--accent);background:linear-gradient(0deg,var(--done),var(--done)) ,var(--surface)}
+.day-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;width:100%;border:0;border-radius:0;background:transparent;text-align:left}
+.day-h b{font-size:19px}
+.day-h span{color:var(--muted);font-size:14px;white-space:nowrap}
+.day-h small{display:block;color:var(--muted);font-size:13px;font-weight:400}
+.tasks{list-style:none;margin:0;padding:0 16px 10px;border-top:1px solid var(--line)}
+.day.collapsed .tasks{display:none}
+.task{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line)}
+.task:last-child{border-bottom:0}
+.task input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--accent);flex:none}
+.task label{flex:1;cursor:pointer}
+.task.done .t{text-decoration:line-through;color:var(--muted)}
+.dur{color:var(--muted);font-size:13px;margin-left:6px}
+.note{display:block;color:var(--muted);font-size:13px}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:6px;color:var(--warn)}
+.watch{flex:none;font-size:14px;font-weight:600;padding:2px 0}
+.tips{margin-top:26px;color:var(--muted);font-size:14px}
+.tips li{margin-bottom:4px}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>SDE-1 backend tracker</h1>
+    <p class="sub">14 days. Backend from First Principles (Sriniously) plus daily DSA. Tick karte jao, progress is browser mein save hota hai.</p>
+  </div>
+  <div class="btns">
+    <a href="https://www.youtube.com/playlist?list=PLui3EUkuMTPgZcV0QhQrOcwMPcBCcd_Q1" target="_blank" rel="noopener"><button type="button">Open playlist</button></a>
+    <button type="button" id="toggle">Collapse all</button>
+    <button type="button" id="reset">Reset</button>
+  </div>
+</header>
+<div class="bar">
+  <div class="bar-top"><span id="pct">0%</span><span id="count">0 / 0 done</span></div>
+  <div class="track" role="progressbar" aria-label="Overall progress" id="pb" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="fill"></div></div>
+</div>
+<main id="days"></main>
+<ul class="tips">
+  <li>1.25x to 1.5x pe dekho. Must videos kul ~22 hrs hain.</li>
+  <li>Har video ke baad ek line: "interviewer isme kya puchega?"</li>
+  <li>DSA gatekeeper hai, uska time mat kaatna. Yeh playlist round 2/3 ke liye hai.</li>
+  <li>Har concept ko Explit se jodo, "maine use kiya" bolna "padha hai" se zyada kaam karta hai.</li>
+</ul>
+</div>
+<script>
+const yt = id => "https://www.youtube.com/watch?v=" + id;
+const V = {
+  5:["5. HTTP for backend engineers","a3C1DMswClQ","1:18"],
+  6:["6. Routing in backend","SubuU1iOC2s","0:24"],
+  7:["7. Serialization & deserialization","vzg90tY3uM0","0:22"],
+  8:["8. Authentication & authorization","A95rliroC8Q","1:36"],
+  9:["9. Validations & transformations","qedj_JjjL-U","0:43"],
+  10:["10. Controllers, services, repositories, middlewares","hyc-7w3pee8","1:00"],
+  11:["11. Complete REST API design","RG6q57DwV8Y","2:04"],
+  12:["12. Mastering databases with Postgres","F7Vwp2Xo5Do","2:45"],
+  13:["13. Caching","estH64OkwxU","1:04"],
+  14:["14. Task queues & background jobs","r-nQsyguU1Y","0:56"],
+  15:["15. Full text search (Elasticsearch)","7_sovzAhRSM","0:32"],
+  16:["16. Error handling & fault tolerance","8NaM_9aKS24","1:09"],
+  17:["17. Configuration management","GR9NtirPXyc","0:36"],
+  18:["18. Logging, monitoring, observability","5PEuwgLOQQM","0:40"],
+  19:["19. Graceful shutdown","6rfBgphiCWM","0:36"],
+  20:["20. Backend security","xB1C1xZZW4k","2:50"],
+  211:["21.1 Scaling & performance, part 1","z7kt_p44rjs","1:48"],
+  212:["21.2 Scaling & performance, part 2","sOhAopEwjH4","2:18"],
+  22:["22. Concurrency & parallelism","bs9MEYRTA30","1:28"]
+};
+const v = (k, o={}) => ({label:V[k][0], url:yt(V[k][1]), dur:V[k][2], ...o});
+const t = (label, o={}) => ({label, ...o});
+const DSA = t("DSA: 2 hrs from your tracker (Amazon OA patterns)");
+const DAYS = [
+ {title:"HTTP, routing, serialization", sub:"Methods, status codes, headers, CORS, idempotency", tasks:[v(5),v(6),v(7),DSA]},
+ {title:"Auth and validation", sub:"JWT vs session, OAuth flow", tasks:[v(8),v(9),t("Explain Explit's auth flow out loud, no notes"),DSA]},
+ {title:"Layers and REST, part 1", sub:"Controller/service/repo split, middleware chain", tasks:[v(10),v(11,{label:"11. REST API design (first hour only)",dur:"1:00"}),DSA]},
+ {title:"REST finish and error handling", sub:"Pagination, versioning, rate limiting, retries, circuit breaker", tasks:[v(11,{label:"11. REST API design (remaining part)",dur:"1:04"}),v(16),DSA]},
+ {title:"Postgres day", sub:"Indexes, transactions, isolation levels, joins", tasks:[v(12),t("Revise your Postgres doc and the 50 Q&As (don't rewatch)"),DSA]},
+ {title:"Caching and background jobs", sub:"Cache-aside, TTL, invalidation, queues", tasks:[v(13),v(14),t("Talking point: move Explit's Nodemailer calls to a queue"),DSA]},
+ {title:"Buffer and revision", sub:"Catch up, consolidate", tasks:[t("Revise notes from days 1 to 6"),t("Answer 10 mock questions on paper"),t("Finish any video you skipped"),DSA]},
+ {title:"Security", sub:"SQLi, XSS, CSRF, hashing, secrets", tasks:[v(20),t("List what is already secured in Explit and what is missing"),DSA]},
+ {title:"Scaling part 1", sub:"Vertical vs horizontal, load balancer, replication", tasks:[v(211),v(19),DSA]},
+ {title:"Scaling part 2", sub:"Sharding, CDN, queues. Base for HLD", tasks:[v(212),DSA]},
+ {title:"Concurrency and ops", sub:"IO vs CPU bound, Node event loop. Watch 17 and 18 at 1.5x", tasks:[v(22),v(17,{tag:"skim"}),v(18,{tag:"skim"}),DSA]},
+ {title:"HLD practice", sub:"Apply the concepts", tasks:[t("Design a URL shortener (30 min, then compare with notes)"),t("Design a rate limiter"),v(15,{tag:"optional"}),DSA]},
+ {title:"Mock interview day", sub:"Project plus backend questions", tasks:[t("Project deep-dive: Explit heap algorithm, auth, deployment"),t("Backend Q&A round with a friend, or record yourself"),DSA]},
+ {title:"Final revision", sub:"Weak spots, resume, OA", tasks:[t("Redo weak topics from the mock"),t("Go through resume project lines one by one"),t("One timed OA-style set"),DSA]}
+];
+// ids
+DAYS.forEach((d,i)=>d.tasks.forEach((k,j)=>k.id="d"+(i+1)+"t"+(j+1)));
+const KEY="sde1-backend-tracker-v1";
+let state={done:{},open:{}};
+try{const s=localStorage.getItem(KEY);if(s)state=JSON.parse(s)}catch(e){}
+state.done=state.done||{};state.open=state.open||{};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+const root=document.getElementById("days");
+function render(){
+  root.innerHTML="";
+  let total=0,done=0;
+  DAYS.forEach((d,i)=>{
+    const n=d.tasks.length,c=d.tasks.filter(k=>state.done[k.id]).length;
+    total+=n;done+=c;
+    const collapsed = state.open[i]===undefined ? (c===n&&n>0) : !state.open[i];
+    const el=document.createElement("section");
+    el.className="day"+(c===n?" complete":"")+(collapsed?" collapsed":"");
+    el.innerHTML=`<button type="button" class="day-h" aria-expanded="${!collapsed}"><div><b>Day ${i+1}: ${d.title}</b><small>${d.sub}</small></div><span>${c}/${n}</span></button><ul class="tasks"></ul>`;
+    el.querySelector(".day-h").onclick=()=>{state.open[i]=collapsed;save();render()};
+    const ul=el.querySelector(".tasks");
+    d.tasks.forEach(k=>{
+      const li=document.createElement("li");
+      li.className="task"+(state.done[k.id]?" done":"");
+      const dur=k.dur?`<span class="dur">${k.dur}</span>`:"";
+      const tag=k.tag?`<span class="tag">${k.tag}</span>`:"";
+      li.innerHTML=`<input type="checkbox" id="${k.id}" ${state.done[k.id]?"checked":""}><label for="${k.id}"><span class="t">${k.label}</span>${dur}${tag}</label>`+(k.url?`<a class="watch" href="${k.url}" target="_blank" rel="noopener">Watch</a>`:"");
+      li.querySelector("input").onchange=e=>{state.done[k.id]=e.target.checked;save();render()};
+      ul.appendChild(li);
+    });
+    root.appendChild(el);
+  });
+  const p=total?Math.round(done/total*100):0;
+  document.getElementById("pct").textContent=p+"%";
+  document.getElementById("count").textContent=done+" / "+total+" done";
+  document.getElementById("fill").style.width=p+"%";
+  document.getElementById("pb").setAttribute("aria-valuenow",p);
+}
+document.getElementById("toggle").onclick=e=>{
+  const anyOpen=DAYS.some((_,i)=>state.open[i]!==false&&!(state.open[i]===undefined&&DAYS[i].tasks.every(k=>state.done[k.id])));
+  DAYS.forEach((_,i)=>state.open[i]=!anyOpen);
+  e.target.textContent=anyOpen?"Expand all":"Collapse all";save();render();
+};
+document.getElementById("reset").onclick=()=>{
+  if(confirm("Saari progress reset karni hai?")){state={done:{},open:{}};save();render()}
+};
+render();
+</script>
+</body>
+</html>
