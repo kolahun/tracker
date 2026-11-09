@@ -131,6 +131,7 @@ const DAYS = [
  {title:"Final revision", sub:"Weak spots, resume, OA", tasks:[t("Redo weak topics from the mock"),t("Go through resume project lines one by one"),t("One timed OA-style set"),DSA]}
 ];
 // ids
+DAYS.forEach(d=>{ d.tasks = d.tasks.map(k=>({...k})); }); 
 DAYS.forEach((d,i)=>d.tasks.forEach((k,j)=>k.id="d"+(i+1)+"t"+(j+1)));
 const KEY="sde1-backend-tracker-v1";
 let state={done:{},open:{}};
